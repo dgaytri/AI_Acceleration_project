@@ -600,11 +600,121 @@ footer{
   padding:2px 0;
 }
 .month-input:focus{outline:none; border-bottom-color:var(--ink-soft);}
+.auth-screen{
+  max-width:360px;
+  margin:80px auto;
+  padding:0 20px;
+}
+.auth-screen h1{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.4rem;
+  margin:0 0 6px;
+}
+.auth-screen .auth-sub{
+  color:var(--ink-soft);
+  font-size:0.9rem;
+  margin-bottom:22px;
+}
+.auth-field{margin-bottom:14px;}
+.auth-field label{
+  display:block;
+  font-size:0.8rem;
+  color:var(--ink-soft);
+  margin-bottom:4px;
+}
+.auth-field input{
+  width:100%;
+  padding:10px 10px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:var(--paper-raised);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.95rem;
+  color:var(--ink);
+}
+.auth-field input:focus{outline:none; border-color:var(--teal);}
+.auth-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+.auth-btn{
+  flex:1;
+  padding:10px 14px;
+  border-radius:var(--radius);
+  border:1px solid var(--ink);
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.9rem;
+  font-weight:500;
+  cursor:pointer;
+}
+.auth-btn.secondary{
+  background:transparent;
+  color:var(--ink);
+}
+.auth-btn:hover{opacity:0.85;}
+.auth-msg{
+  margin-top:14px;
+  font-size:0.85rem;
+  min-height:1.2em;
+}
+.auth-msg.error{color:var(--brick);}
+.auth-msg.ok{color:var(--teal);}
+.app-hidden{display:none !important;}
+.signout-btn{
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  font-size:0.8rem;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  padding:4px;
+  font-family:'IBM Plex Sans', sans-serif;
+}
+.signout-btn:hover{color:var(--brick);}
+.account-row{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+  font-size:0.8rem;
+  color:var(--ink-soft);
+}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 
-<div class="wrap">
+<div id="authScreen" class="auth-screen">
+  <h1>Household ledger</h1>
+  <div class="auth-sub" id="authSub">Sign in to load your budget, or create an account to start one.</div>
+  <div class="auth-field">
+    <label for="authEmail">Email</label>
+    <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com">
+  </div>
+  <div class="auth-field">
+    <label for="authPassword">Password</label>
+    <input type="password" id="authPassword" autocomplete="current-password" placeholder="At least 6 characters">
+  </div>
+  <div class="auth-actions">
+    <button type="button" class="auth-btn" id="signInBtn">Sign in</button>
+    <button type="button" class="auth-btn secondary" id="signUpBtn">Create account</button>
+  </div>
+  <div class="auth-msg" id="authMsg"></div>
+</div>
+
+<div class="wrap app-hidden" id="appWrap">
+
+  <div class="account-row">
+    <span id="accountEmail"></span>
+    <button class="signout-btn" id="signOutBtn" type="button">Sign out</button>
+  </div>
 
   <header class="hero">
     <div class="eyebrow-row">
@@ -777,6 +887,12 @@ footer{
 <script>
 (function(){
   const uid = () => Math.random().toString(36).slice(2, 9);
+
+  // ---------- Supabase ----------
+  const SUPABASE_URL = 'https://sqaditfdwzyvqpwwlxuc.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxYWRpdGZkd3p5dnFwd3dseHVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4Mzc1NjIsImV4cCI6MjEwNTQxMzU2Mn0.z7kZpTSqUFgP6v4Izs1yJSpXIg_HeyDhR-W_u1omsYs';
+  const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentUser = null;
 
   const DEFAULT_STATE = {
     month: '',
@@ -995,12 +1111,18 @@ footer{
   }
 
   async function loadState(){
+    if(!currentUser) return;
     const myVersion = stateVersion;
     try{
-      const result = await window.storage.get('budget-data', false);
+      const { data: row, error } = await supa
+        .from('budgets')
+        .select('data')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+      if(error) throw error;
       if(myVersion !== stateVersion) return; // state was reset/replaced while this was in flight — discard
-      if(result && result.value){
-        const parsed = JSON.parse(result.value);
+      if(row && row.data){
+        const parsed = row.data;
         state = Object.assign({}, DEFAULT_STATE, parsed);
         state.savingsPlan = Object.assign({}, DEFAULT_STATE.savingsPlan, parsed.savingsPlan || {});
         state.savingsPlan.retirementAmounts = (parsed.savingsPlan && parsed.savingsPlan.retirementAmounts) || {};
@@ -1008,9 +1130,14 @@ footer{
         state.advisor = Object.assign({}, DEFAULT_STATE.advisor, parsed.advisor || {});
         state.advisor.perEarner = (parsed.advisor && parsed.advisor.perEarner) || {};
         state.taxes = Object.assign({}, DEFAULT_STATE.taxes, parsed.taxes || {});
+      } else {
+        // No row yet for this account — start from the blank state, not the
+        // sample-filled default, so a new user doesn't see someone else's numbers.
+        state = JSON.parse(JSON.stringify(EMPTY_STATE));
       }
     }catch(e){
-      // no existing data, start fresh
+      setStatus('Could not load your saved budget — starting fresh.');
+      state = JSON.parse(JSON.stringify(EMPTY_STATE));
     }
     if(myVersion !== stateVersion) return; // double-check after the try/catch too
     ensurePerEarnerDefaults();
@@ -1018,13 +1145,14 @@ footer{
   }
 
   async function saveState(){
+    if(!currentUser) return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async ()=>{
       try{
-        const result = await window.storage.set('budget-data', JSON.stringify(state), false);
-        if(!result){
-          setStatus('Could not save — your changes may not persist.');
-        }
+        const { error } = await supa
+          .from('budgets')
+          .upsert({ user_id: currentUser.id, data: state, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        if(error) throw error;
       }catch(e){
         setStatus('Could not save — your changes may not persist.');
       }
@@ -1978,9 +2106,12 @@ footer{
       stateVersion++;
       state = JSON.parse(JSON.stringify(EMPTY_STATE));
       renderAll();
+      if(!currentUser){ setStatus('Cleared.'); return; }
       try{
-        const result = await window.storage.set('budget-data', JSON.stringify(state), false);
-        setStatus(result ? 'Cleared.' : 'Cleared on screen, but saving failed — it may reappear on reload.');
+        const { error } = await supa
+          .from('budgets')
+          .upsert({ user_id: currentUser.id, data: state, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        setStatus(!error ? 'Cleared.' : 'Cleared on screen, but saving failed — it may reappear on reload.');
       }catch(e){
         setStatus('Cleared on screen, but saving failed — it may reappear on reload.');
       }
@@ -2031,7 +2162,72 @@ footer{
     saveState();
   });
 
-  loadState();
+  // ---------- Auth wiring ----------
+  function showAuthScreen(){
+    $('appWrap').classList.add('app-hidden');
+    $('authScreen').classList.remove('app-hidden');
+  }
+  function showApp(){
+    $('authScreen').classList.add('app-hidden');
+    $('appWrap').classList.remove('app-hidden');
+  }
+  function setAuthMsg(msg, kind){
+    const el = $('authMsg');
+    el.textContent = msg || '';
+    el.className = 'auth-msg' + (kind ? ' ' + kind : '');
+  }
+
+  $('signInBtn').addEventListener('click', async ()=>{
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    if(!email || !password){ setAuthMsg('Enter your email and password.', 'error'); return; }
+    setAuthMsg('Signing in…');
+    const { error } = await supa.auth.signInWithPassword({ email, password });
+    if(error){ setAuthMsg(error.message, 'error'); }
+  });
+
+  $('signUpBtn').addEventListener('click', async ()=>{
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    if(!email || !password){ setAuthMsg('Enter an email and a password (6+ characters).', 'error'); return; }
+    setAuthMsg('Creating account…');
+    const { data, error } = await supa.auth.signUp({ email, password });
+    if(error){
+      setAuthMsg(error.message, 'error');
+    } else if(data.session){
+      setAuthMsg('Account created.', 'ok');
+    } else {
+      setAuthMsg('Check your email to confirm your account, then sign in.', 'ok');
+    }
+  });
+
+  $('signOutBtn').addEventListener('click', async ()=>{
+    await supa.auth.signOut();
+  });
+
+  supa.auth.onAuthStateChange((event, session)=>{
+    if(session && session.user){
+      currentUser = session.user;
+      $('accountEmail').textContent = currentUser.email || '';
+      showApp();
+      setAuthMsg('');
+      $('authEmail').value = '';
+      $('authPassword').value = '';
+      stateVersion++;
+      loadState();
+    } else {
+      currentUser = null;
+      showAuthScreen();
+    }
+  });
+
+  // Restore an existing session on page load, if any.
+  supa.auth.getSession().then(({ data })=>{
+    if(!data.session){
+      showAuthScreen();
+    }
+    // If a session exists, onAuthStateChange fires with it automatically.
+  });
 })();
 </script>
 
