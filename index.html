@@ -687,7 +687,7 @@ footer{
   color:var(--ink-soft);
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -891,6 +891,16 @@ footer{
   // ---------- Supabase ----------
   const SUPABASE_URL = 'https://sqaditfdwzyvqpwwlxuc.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxYWRpdGZkd3p5dnFwd3dseHVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4Mzc1NjIsImV4cCI6MjEwNTQxMzU2Mn0.z7kZpTSqUFgP6v4Izs1yJSpXIg_HeyDhR-W_u1omsYs';
+  if(!window.supabase){
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const msg = document.getElementById('authMsg');
+      if(msg){
+        msg.textContent = 'Could not load the Supabase library from the CDN. Check your internet connection, or that cdn.jsdelivr.net is not blocked, then reload.';
+        msg.className = 'auth-msg error';
+      }
+    });
+    return;
+  }
   const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentUser = null;
 
