@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Household Ledger — Budget Planner</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#F1EEE6;
+  --paper-raised:#E7E1D3;
+  --ink:#2B2A28;
+  --ink-soft:#6B665C;
+  --teal:#1F4B43;
+  --teal-light:#DCE8E4;
+  --ochre:#C98A2B;
+  --ochre-light:#F1E3C6;
+  --brick:#B5563A;
+  --brick-light:#F3DFD8;
+  --line:#CBC3AF;
+  --radius:10px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{
+  max-width:720px;
+  margin:0 auto;
+  padding:32px 20px 80px;
+}
+
+/* ---------- Header / Hero ---------- */
+header.hero{
+  padding-bottom:28px;
+  margin-bottom:28px;
+  border-bottom:2px solid var(--ink);
+}
+.eyebrow-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:18px;
+  gap:12px;
+}
+h1{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.5rem;
+  margin:0;
+  letter-spacing:0.2px;
+}
+.reset-btn{
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  font-size:0.8rem;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  padding:4px;
+  font-family:'IBM Plex Sans', sans-serif;
+}
+.reset-btn:hover{color:var(--brick);}
+
+.hero-figure{
+  display:flex;
+  align-items:flex-end;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.hero-number{
+  font-family:'Fraunces', serif;
+  font-weight:700;
+  font-size:clamp(2.6rem, 9vw, 3.6rem);
+  line-height:1;
+  color:var(--teal);
+  font-variant-numeric:tabular-nums;
+}
+.hero-number.negative{color:var(--brick);}
+.hero-label{
+  font-size:0.95rem;
+  color:var(--ink-soft);
+  padding-bottom:6px;
+  max-width:260px;
+}
+.hero-breakdown{
+  margin-top:14px;
+  font-size:0.9rem;
+  color:var(--ink-soft);
+  font-variant-numeric:tabular-nums;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.hero-breakdown .val{
+  color:var(--ink);
+  font-weight:600;
+}
+.hero-breakdown .op{
+  color:var(--ink-soft);
+  font-size:1rem;
+}
+.hero-breakdown .eq-result{
+  font-weight:600;
+}
+.hero-breakdown .eq-result.negative{color:var(--brick);}
+.hero-breakdown .eq-result.positive{color:var(--teal);}
+
+.hero-bar{
+  margin-top:20px;
+  height:14px;
+  border-radius:7px;
+  background:var(--paper-raised);
+  overflow:hidden;
+  display:flex;
+  border:1px solid var(--line);
+}
+.hero-bar-seg{height:100%;}
+
+/* ---------- Sections ---------- */
+section{
+  margin-bottom:34px;
+}
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:4px;
+}
+.section-head h2{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.15rem;
+  margin:0;
+}
+.section-sub{
+  color:var(--ink-soft);
+  font-size:0.85rem;
+  margin-bottom:14px;
+}
+.section-total{
+  font-variant-numeric:tabular-nums;
+  font-weight:600;
+  font-size:1.05rem;
+}
+
+.ledger{
+  border-top:1px solid var(--line);
+}
+.row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+.row input[type="text"]{
+  flex:1;
+  min-width:0;
+  border:none;
+  background:transparent;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.95rem;
+  color:var(--ink);
+  padding:4px 2px;
+  border-bottom:1px dashed transparent;
+}
+.row input[type="text"]:focus{
+  outline:none;
+  border-bottom:1px dashed var(--ink-soft);
+}
+.row .amount-wrap{
+  display:flex;
+  align-items:center;
+  gap:2px;
+  color:var(--ink-soft);
+}
+.row input[type="number"]{
+  width:88px;
+  border:none;
+  background:transparent;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.95rem;
+  color:var(--ink);
+  text-align:right;
+  padding:4px 2px;
+  font-variant-numeric:tabular-nums;
+}
+.row input[type="number"]:focus{outline:none;}
+.row-remove{
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  cursor:pointer;
+  font-size:1.1rem;
+  line-height:1;
+  padding:2px 4px;
+  border-radius:4px;
+}
+.row-remove:hover{color:var(--brick); background:var(--brick-light);}
+
+.add-row-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:12px;
+  background:none;
+  border:1px solid var(--ink);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.85rem;
+  padding:7px 14px;
+  border-radius:20px;
+  cursor:pointer;
+}
+.row-actions{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.row-actions .reset-btn{
+  margin-top:12px;
+}
+.add-row-btn:hover{background:var(--ink); color:var(--paper);}
+
+.empty-note{
+  color:var(--ink-soft);
+  font-size:0.9rem;
+  padding:14px 0;
+  font-style:italic;
+}
+
+/* ---------- Goals ---------- */
+.goal{
+  padding:16px 0;
+  border-bottom:1px solid var(--line);
+}
+.goal:first-child{border-top:1px solid var(--line);}
+.goal-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:baseline;
+  margin-bottom:8px;
+}
+.goal-name-input{
+  border:none;
+  background:transparent;
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:1rem;
+  color:var(--ink);
+  flex:1;
+  min-width:0;
+}
+.goal-name-input:focus{outline:none;}
+.goal-figures{
+  font-size:0.85rem;
+  color:var(--ink-soft);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.goal-track{
+  height:10px;
+  border-radius:6px;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.goal-fill{
+  height:100%;
+  background:var(--ochre);
+  border-radius:6px 0 0 6px;
+  transition:width 0.4s ease;
+}
+.goal-controls{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:0.85rem;
+}
+.goal-controls label{color:var(--ink-soft);}
+.goal-controls input[type="number"]{
+  width:80px;
+  border:1px solid var(--line);
+  background:var(--paper);
+  border-radius:5px;
+  padding:5px 8px;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.goal-add-btn{
+  background:var(--teal);
+  color:var(--paper);
+  border:none;
+  border-radius:5px;
+  padding:6px 12px;
+  cursor:pointer;
+  font-size:0.85rem;
+}
+.goal-add-btn:hover{background:#163a34;}
+.goal-remove{
+  margin-left:auto;
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  cursor:pointer;
+  font-size:0.8rem;
+  text-decoration:underline;
+}
+.goal-remove:hover{color:var(--brick);}
+
+/* ---------- Estimated taxes ---------- */
+.tax-inputs-row{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.tax-input-field label{
+  display:block;
+  font-size:0.8rem;
+  color:var(--ink-soft);
+  margin-bottom:4px;
+}
+.tax-input-field select{
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:7px 10px;
+  background:var(--paper);
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.92rem;
+  color:var(--ink);
+  min-width:200px;
+}
+.tax-summary{
+  border-top:1px solid var(--line);
+  padding-top:4px;
+}
+.tax-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid var(--line);
+  font-size:0.92rem;
+}
+.tax-row .label{color:var(--ink-soft);}
+.tax-row .amt{
+  color:var(--ink);
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+.tax-row.total .label, .tax-row.total .amt{
+  color:var(--ink);
+  font-weight:700;
+}
+.tax-disclaimer{
+  font-size:0.78rem;
+  color:var(--ink-soft);
+  margin-top:12px;
+}
+
+/* ---------- Savings plan pockets ---------- */
+.plan-amount-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:16px;
+}
+.plan-amount-field label{
+  display:block;
+  font-size:0.8rem;
+  color:var(--ink-soft);
+  margin-bottom:4px;
+}
+.amount-wrap-standalone{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:6px 10px;
+  background:var(--paper);
+}
+.amount-wrap-standalone span{color:var(--ink-soft);}
+.amount-wrap-standalone input{
+  border:none;
+  background:transparent;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:1rem;
+  width:110px;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+.amount-wrap-standalone input:focus{outline:none;}
+
+.pocket-group-label{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:0.85rem;
+  color:var(--ink-soft);
+  margin:18px 0 4px;
+  letter-spacing:0.2px;
+}
+.pocket-group-label:first-of-type{margin-top:6px;}
+
+.retirement-earner-block{
+  margin-bottom:14px;
+}
+.retirement-earner-name{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:0.92rem;
+  color:var(--ink);
+  padding:10px 0 2px;
+}
+.pocket-row-fixed{gap:10px;}
+.pocket-type-label{
+  flex:1;
+  font-size:0.9rem;
+  color:var(--ink);
+}
+
+.pocket-row{gap:10px;}
+.pocket-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.pocket-pct{
+  width:44px;
+  text-align:right;
+  color:var(--ink-soft);
+  font-size:0.85rem;
+  font-variant-numeric:tabular-nums;
+  flex-shrink:0;
+}
+
+.plan-bar{
+  margin-top:18px;
+  height:16px;
+  border-radius:8px;
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  overflow:hidden;
+  display:flex;
+}
+.plan-bar-seg{height:100%;}
+.plan-summary{
+  margin-top:10px;
+  font-size:0.88rem;
+  color:var(--ink-soft);
+}
+.plan-summary .warn{color:var(--brick); font-weight:600;}
+.plan-summary .val{color:var(--ink); font-weight:600;}
+
+/* ---------- Advisor questionnaire ---------- */
+.advisor-q{
+  padding:16px 0;
+  border-bottom:1px solid var(--line);
+}
+.advisor-q:first-child{border-top:1px solid var(--line);}
+.advisor-q-title{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:1rem;
+  margin-bottom:10px;
+}
+.advisor-options{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.advisor-options label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:0.9rem;
+  color:var(--ink);
+  cursor:pointer;
+}
+.advisor-options input[type="radio"]{
+  accent-color:var(--teal);
+  width:16px;
+  height:16px;
+  flex-shrink:0;
+}
+#advisorForm{margin-bottom:6px;}
+.advisor-earner-block{
+  margin-bottom:10px;
+  padding-bottom:6px;
+  border-bottom:2px solid var(--ink);
+}
+.advisor-earner-name{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.02rem;
+  color:var(--teal);
+  padding-top:14px;
+}
+#advisorSubmit{margin-top:16px;}
+
+.advisor-results{
+  margin-top:24px;
+  padding-top:6px;
+}
+.advisor-category{
+  margin-bottom:22px;
+}
+.advisor-category h3{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1rem;
+  color:var(--teal);
+  margin:0 0 10px 0;
+}
+.advisor-category .tip{
+  margin-bottom:10px;
+}
+.advisor-disclaimer{
+  font-size:0.8rem;
+  color:var(--ink-soft);
+  border-top:1px solid var(--line);
+  padding-top:12px;
+  margin-top:6px;
+}
+.advisor-empty{
+  color:var(--ink-soft);
+  font-size:0.88rem;
+  font-style:italic;
+}
+
+/* ---------- Tips ---------- */
+.tips-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px 28px;
+}
+@media (max-width:560px){
+  .tips-grid{grid-template-columns:1fr;}
+}
+.tip{
+  padding-left:16px;
+  position:relative;
+  font-size:0.92rem;
+  color:var(--ink);
+}
+.tip::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:8px;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--ochre);
+}
+.tip strong{color:var(--teal);}
+
+footer{
+  border-top:1px solid var(--line);
+  padding-top:18px;
+  color:var(--ink-soft);
+  font-size:0.78rem;
+}
+
+.status-note{
+  font-size:0.75rem;
+  color:var(--ink-soft);
+  min-height:1em;
+  margin-top:6px;
+}
+
+.month-input{
+  border:none;
+  background:transparent;
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:0.85rem;
+  color:var(--ink-soft);
+  text-align:right;
+  width:160px;
+  border-bottom:1px dashed var(--line);
+  padding:2px 0;
+}
+.month-input:focus{outline:none; border-bottom-color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow-row">
+      <h1>Household ledger</h1>
+      <button class="reset-btn" id="resetBtn" type="button">Clear all data</button>
+    </div>
+    <div class="hero-figure">
+      <div>
+        <div class="hero-number" id="heroNumber">$0</div>
+      </div>
+      <div class="hero-label" id="heroLabel">left over this month, once your income and bills are entered</div>
+    </div>
+    <div class="hero-breakdown" id="heroBreakdown"></div>
+    <div class="hero-bar" id="heroBar"></div>
+    <input class="month-input" id="monthLabel" type="text" placeholder="Label this budget, e.g. September 2026" style="margin-top:14px;">
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>Money in</h2>
+      <span class="section-total" id="incomeTotal">$0</span>
+    </div>
+    <div class="section-sub">Gross pay before taxes — paychecks, benefits, child support, side income — anything that comes in.</div>
+    <div class="ledger" id="incomeRows"></div>
+    <button class="add-row-btn" id="addIncomeBtn" type="button">+ Add income source</button>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Estimated income taxes</h2>
+    </div>
+    <div class="section-sub">A rough estimate from your total gross income, filing status, and state — for planning only, not a substitute for a tax preparer.</div>
+
+    <div class="tax-inputs-row">
+      <div class="tax-input-field">
+        <label for="filingStatus">Filing status</label>
+        <select id="filingStatus">
+          <option value="single">Single</option>
+          <option value="mfj">Married filing jointly</option>
+          <option value="hoh">Head of household</option>
+        </select>
+      </div>
+      <div class="tax-input-field">
+        <label for="stateResidence">State of residence</label>
+        <select id="stateResidence">
+          <option value="">Select a state…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tax-summary" id="taxSummary"></div>
+    <div class="tax-disclaimer">Estimated using 2026 federal tax brackets, a simplified state rate, and Social Security/Medicare (FICA) rates. It doesn't account for credits, itemized deductions, local taxes, or filing nuances. For business owners, it assumes income entered as wages unless you've said (in "Get pointers on saving further") that it's paid entirely as distributions. Treat this as a planning ballpark, not a filed return.</div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Money out</h2>
+      <span class="section-total" id="expenseTotal">$0</span>
+    </div>
+    <div class="section-sub">Common categories are pre-filled below — delete any that don't apply, and add your own with "+ Add expense."</div>
+    <div class="ledger" id="expenseRows"></div>
+    <div class="row-actions">
+      <button class="add-row-btn" id="addExpenseBtn" type="button">+ Add expense</button>
+      <button class="reset-btn" id="resetExpensesBtn" type="button">Reset to common categories</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Savings goals</h2>
+    </div>
+    <div class="section-sub">Even small, steady amounts add up. Start with whatever fits right now.</div>
+    <div id="goalsList"></div>
+    <button class="add-row-btn" id="addGoalBtn" type="button">+ Add a goal</button>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Divide your monthly savings</h2>
+    </div>
+    <div class="section-sub">Split what you're setting aside into pockets — retirement, your kids' education, other investments, or anything else.</div>
+
+    <div class="plan-amount-row">
+      <div class="plan-amount-field">
+        <label for="planMonthlyAmount">Amount to save this month</label>
+        <div class="amount-wrap-standalone">
+          <span>$</span>
+          <input type="number" id="planMonthlyAmount" min="0" step="1">
+        </div>
+      </div>
+      <button type="button" class="reset-btn" id="useLeftoverBtn">Use this month's leftover (<span id="leftoverPreview">$0</span>)</button>
+    </div>
+
+    <div class="pocket-group-label">Retirement — per earner</div>
+    <div id="retirementPockets"></div>
+
+    <div class="pocket-group-label">Other pockets</div>
+    <div class="ledger" id="pocketsRows"></div>
+    <button class="add-row-btn" id="addPocketBtn" type="button">+ Add a pocket</button>
+
+    <div class="plan-bar" id="planBar"></div>
+    <div class="plan-summary" id="planSummary"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Get pointers on saving further</h2>
+    </div>
+    <div class="section-sub">Answer a few questions for each earner and about your household to see options worth looking into for retirement, taxes, and education savings. This is general information, not advice tailored to your situation.</div>
+
+    <form id="advisorForm">
+      <div id="perEarnerQuestions"></div>
+
+      <div class="advisor-q">
+        <div class="advisor-q-title">Do you have children you're saving for — schooling, activities, or their future?</div>
+        <div class="advisor-options">
+          <label><input type="radio" name="kids" value="young"> Yes, younger children</label>
+          <label><input type="radio" name="kids" value="teen"> Yes, teenagers</label>
+          <label><input type="radio" name="kids" value="planning"> Not yet, but planning to</label>
+          <label><input type="radio" name="kids" value="none"> No</label>
+        </div>
+      </div>
+
+      <div class="advisor-q">
+        <div class="advisor-q-title">When you file taxes, do you know if you claim credits like the Earned Income Tax Credit or Child Tax Credit?</div>
+        <div class="advisor-options">
+          <label><input type="radio" name="taxCredits" value="yes"> Yes, I already claim these</label>
+          <label><input type="radio" name="taxCredits" value="no"> No, or I'm not sure I qualify</label>
+          <label><input type="radio" name="taxCredits" value="nofile"> I don't file taxes</label>
+        </div>
+      </div>
+
+      <div class="advisor-q">
+        <div class="advisor-q-title">Do you currently have money set aside for emergencies?</div>
+        <div class="advisor-options">
+          <label><input type="radio" name="emergency" value="some"> Yes, a few months' expenses</label>
+          <label><input type="radio" name="emergency" value="little"> Yes, a small amount</label>
+          <label><input type="radio" name="emergency" value="none"> No, nothing yet</label>
+        </div>
+      </div>
+
+      <button type="button" class="add-row-btn" id="advisorSubmit">Show my pointers</button>
+    </form>
+
+    <div id="advisorResults"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>A few things that help</h2>
+    </div>
+    <div class="tips-grid">
+      <div class="tip"><strong>Save before it disappears.</strong> If you can, move even $5–$10 into savings right after income arrives, before it's absorbed into spending.</div>
+      <div class="tip"><strong>Build a small buffer first.</strong> A few hundred dollars set aside can prevent a surprise bill from becoming a missed rent payment.</div>
+      <div class="tip"><strong>Check what you may qualify for.</strong> Programs like SNAP, LIHEAP (energy assistance), WIC, and the Earned Income Tax Credit exist to help — they're worth checking regardless of past eligibility.</div>
+      <div class="tip"><strong>List bills by due date, not just amount.</strong> Knowing what's due when helps you avoid late fees more than knowing totals alone.</div>
+      <div class="tip"><strong>Round numbers are fine.</strong> This planner works even with rough estimates — refine them as real numbers come in.</div>
+      <div class="tip"><strong>Revisit monthly.</strong> Income and bills shift. A five-minute check-in each payday keeps this useful.</div>
+    </div>
+  </section>
+
+  <div class="status-note" id="statusNote"></div>
+
+  <footer>
+    This tool helps you organize your own numbers and does not provide financial, tax, or legal advice. For guidance on public assistance eligibility or debt questions, a local nonprofit credit counselor or benefits office can give advice specific to your situation.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const uid = () => Math.random().toString(36).slice(2, 9);
+
+  const DEFAULT_STATE = {
+    month: '',
+    income: [
+      {id:uid(), name:'Husband\'s paycheck', amount:3000},
+      {id:uid(), name:'Wife\'s paycheck', amount:4000}
+    ],
+    expenses: [
+      {id:uid(), name:'Rent', amount:2000},
+      {id:uid(), name:'Utilities', amount:0},
+      {id:uid(), name:'Groceries', amount:1000},
+      {id:uid(), name:'Transportation / gas', amount:500},
+      {id:uid(), name:'Phone & internet', amount:0},
+      {id:uid(), name:'Insurance', amount:0},
+      {id:uid(), name:'Debt payments', amount:0},
+      {id:uid(), name:'Healthcare / medical', amount:0},
+      {id:uid(), name:'Kids\' extra classes', amount:100},
+      {id:uid(), name:'Subscriptions', amount:0},
+      {id:uid(), name:'Miscellaneous', amount:500}
+    ],
+    goals:[],
+    savingsPlan: {
+      monthlyAmount: 2900,
+      retirementAmounts: {},
+      pockets: [
+        {id:uid(), name:'Child education', amount:0, auto:true},
+        {id:uid(), name:'Private investments', amount:0}
+      ]
+    },
+    advisor: {perEarner:{}, kids:'', taxCredits:'', emergency:''},
+    taxes: {filingStatus:'mfj', stateCode:''}
+  };
+
+  // A genuinely blank state, used by "Clear all data" — distinct from
+  // DEFAULT_STATE, which is pre-filled sample data for a first-time visit.
+  const EMPTY_STATE = {
+    month: '',
+    income: [],
+    expenses: [],
+    goals: [],
+    savingsPlan: {
+      monthlyAmount: 0,
+      retirementAmounts: {},
+      pockets: []
+    },
+    advisor: {perEarner:{}, kids:'', taxCredits:'', emergency:''},
+    taxes: {filingStatus:'mfj', stateCode:''}
+  };
+
+  let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  let saveTimer = null;
+  let stateVersion = 0; // bumped whenever something replaces `state` wholesale, so an
+                         // in-flight loadState() from before that point knows to discard its result
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => {
+    const num = Number(n) || 0;
+    return num.toLocaleString('en-US', {style:'currency', currency:'USD', maximumFractionDigits:0});
+  };
+
+  // 2026 federal income tax brackets (IRS Rev. Proc. 2025-32), before credits.
+  // Each entry: taxable income up to this amount is taxed at this marginal rate.
+  const FEDERAL_BRACKETS = {
+    single: [
+      {upTo:12400, rate:0.10}, {upTo:50400, rate:0.12}, {upTo:105700, rate:0.22},
+      {upTo:201775, rate:0.24}, {upTo:256225, rate:0.32}, {upTo:640600, rate:0.35},
+      {upTo:Infinity, rate:0.37}
+    ],
+    mfj: [
+      {upTo:24800, rate:0.10}, {upTo:100800, rate:0.12}, {upTo:211400, rate:0.22},
+      {upTo:403550, rate:0.24}, {upTo:512450, rate:0.32}, {upTo:768700, rate:0.35},
+      {upTo:Infinity, rate:0.37}
+    ],
+    hoh: [
+      {upTo:17700, rate:0.10}, {upTo:67450, rate:0.12}, {upTo:105700, rate:0.22},
+      {upTo:201775, rate:0.24}, {upTo:256200, rate:0.32}, {upTo:640600, rate:0.35},
+      {upTo:Infinity, rate:0.37}
+    ]
+  };
+  const STANDARD_DEDUCTION = {single: 16100, mfj: 32200, hoh: 24150};
+
+  function computeFederalTax(taxableIncome, status){
+    const brackets = FEDERAL_BRACKETS[status] || FEDERAL_BRACKETS.single;
+    let tax = 0;
+    let lower = 0;
+    for(const b of brackets){
+      if(taxableIncome > lower){
+        const taxedAtThisRate = Math.min(taxableIncome, b.upTo) - lower;
+        tax += taxedAtThisRate * b.rate;
+        lower = b.upTo;
+      } else break;
+    }
+    return tax;
+  }
+
+  // Simplified state income tax rates for 2026: no-tax states at 0, flat-tax
+  // states at their statutory rate, and graduated-bracket states approximated
+  // with a single representative rate rather than full bracket math. This is
+  // a planning estimate, not an exact calculation — actual state liability
+  // depends on that state's own deductions, credits, and bracket structure.
+  const STATE_TAX_TABLE = {
+    AL:{name:'Alabama', rate:0.05}, AK:{name:'Alaska', rate:0}, AZ:{name:'Arizona', rate:0.025},
+    AR:{name:'Arkansas', rate:0.039}, CA:{name:'California', rate:0.06}, CO:{name:'Colorado', rate:0.044},
+    CT:{name:'Connecticut', rate:0.055}, DE:{name:'Delaware', rate:0.045}, DC:{name:'District of Columbia', rate:0.07},
+    FL:{name:'Florida', rate:0}, GA:{name:'Georgia', rate:0.0499}, HI:{name:'Hawaii', rate:0.06},
+    ID:{name:'Idaho', rate:0.058}, IL:{name:'Illinois', rate:0.0495}, IN:{name:'Indiana', rate:0.0305},
+    IA:{name:'Iowa', rate:0.038}, KS:{name:'Kansas', rate:0.05}, KY:{name:'Kentucky', rate:0.035},
+    LA:{name:'Louisiana', rate:0.04}, ME:{name:'Maine', rate:0.06}, MD:{name:'Maryland', rate:0.0475},
+    MA:{name:'Massachusetts', rate:0.05}, MI:{name:'Michigan', rate:0.0425}, MN:{name:'Minnesota', rate:0.065},
+    MS:{name:'Mississippi', rate:0.04}, MO:{name:'Missouri', rate:0.04}, MT:{name:'Montana', rate:0.055},
+    NE:{name:'Nebraska', rate:0.045}, NV:{name:'Nevada', rate:0}, NH:{name:'New Hampshire', rate:0},
+    NJ:{name:'New Jersey', rate:0.05}, NM:{name:'New Mexico', rate:0.04}, NY:{name:'New York', rate:0.06},
+    NC:{name:'North Carolina', rate:0.0399}, ND:{name:'North Dakota', rate:0.02}, OH:{name:'Ohio', rate:0.0275},
+    OK:{name:'Oklahoma', rate:0.04}, OR:{name:'Oregon', rate:0.075}, PA:{name:'Pennsylvania', rate:0.0307},
+    RI:{name:'Rhode Island', rate:0.045}, SC:{name:'South Carolina', rate:0.05}, SD:{name:'South Dakota', rate:0},
+    TN:{name:'Tennessee', rate:0}, TX:{name:'Texas', rate:0}, UT:{name:'Utah', rate:0.0465},
+    VT:{name:'Vermont', rate:0.055}, VA:{name:'Virginia', rate:0.05}, WA:{name:'Washington', rate:0},
+    WV:{name:'West Virginia', rate:0.045}, WI:{name:'Wisconsin', rate:0.05}, WY:{name:'Wyoming', rate:0}
+  };
+
+  // 2026 Social Security / Medicare parameters.
+  const SS_WAGE_BASE = 184500;      // Social Security taxes only wages up to this amount, per earner
+  const SS_RATE_W2 = 0.062;         // employee-side Social Security rate
+  const MEDICARE_RATE_W2 = 0.0145;  // employee-side Medicare rate, uncapped
+  const SE_SS_RATE = 0.124;         // self-employed pays both the employee and employer Social Security share
+  const SE_MEDICARE_RATE = 0.029;   // self-employed pays both the employee and employer Medicare share
+  const ADDL_MEDICARE_RATE = 0.009; // extra Medicare tax above the household's filing-status threshold
+  const ADDL_MEDICARE_THRESHOLD = {single:200000, mfj:250000, hoh:200000};
+
+  function computeFicaTaxes(){
+    const status = state.taxes.filingStatus || 'mfj';
+    let ssAnnual = 0;
+    let medicareRegularAnnual = 0;
+    let combinedMedicareBase = 0;
+
+    state.income.forEach(inc=>{
+      const annual = (Number(inc.amount) || 0) * 12;
+      const answers = state.advisor.perEarner[inc.id] || {};
+      const type = answers.employmentType;
+
+      if(type === 's_corp' || type === 'c_corp'){
+        if(answers.bizPayroll === 'none'){
+          // Pure distributions/dividends aren't subject to FICA — nothing to add.
+          return;
+        }
+        // Otherwise treat the entered amount as W-2 salary for this estimate.
+        const ssTaxable = Math.min(annual, SS_WAGE_BASE);
+        ssAnnual += ssTaxable * SS_RATE_W2;
+        medicareRegularAnnual += annual * MEDICARE_RATE_W2;
+        combinedMedicareBase += annual;
+      } else if(type === 'cash'){
+        const netAdjusted = annual * 0.9235; // self-employment tax applies to 92.35% of net earnings
+        const ssTaxable = Math.min(netAdjusted, SS_WAGE_BASE);
+        ssAnnual += ssTaxable * SE_SS_RATE;
+        medicareRegularAnnual += netAdjusted * SE_MEDICARE_RATE;
+        combinedMedicareBase += netAdjusted;
+      } else {
+        // Employees, and earners who haven't answered yet, default to standard W-2 treatment.
+        const ssTaxable = Math.min(annual, SS_WAGE_BASE);
+        ssAnnual += ssTaxable * SS_RATE_W2;
+        medicareRegularAnnual += annual * MEDICARE_RATE_W2;
+        combinedMedicareBase += annual;
+      }
+    });
+
+    const threshold = ADDL_MEDICARE_THRESHOLD[status] || ADDL_MEDICARE_THRESHOLD.mfj;
+    const additionalMedicareAnnual = Math.max(0, combinedMedicareBase - threshold) * ADDL_MEDICARE_RATE;
+    const medicareAnnual = medicareRegularAnnual + additionalMedicareAnnual;
+    const totalAnnual = ssAnnual + medicareAnnual;
+
+    return {
+      ssAnnual,
+      medicareAnnual,
+      additionalMedicareAnnual,
+      totalAnnual,
+      ssMonthly: ssAnnual / 12,
+      medicareMonthly: medicareAnnual / 12,
+      totalMonthly: totalAnnual / 12
+    };
+  }
+
+  function computeEstimatedTaxes(){
+    const totalMonthlyIncome = state.income.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const annualGross = totalMonthlyIncome * 12;
+    const status = state.taxes.filingStatus || 'mfj';
+    const stdDeduction = STANDARD_DEDUCTION[status] || STANDARD_DEDUCTION.mfj;
+    const taxableAnnual = Math.max(0, annualGross - stdDeduction);
+
+    const fedAnnual = computeFederalTax(taxableAnnual, status);
+    const stateInfo = STATE_TAX_TABLE[state.taxes.stateCode];
+    const stateAnnual = stateInfo ? taxableAnnual * stateInfo.rate : 0;
+    const fica = computeFicaTaxes();
+
+    const totalAnnual = fedAnnual + stateAnnual + fica.totalAnnual;
+    return {
+      annualGross,
+      stdDeduction,
+      taxableAnnual,
+      fedMonthly: fedAnnual / 12,
+      stateMonthly: stateAnnual / 12,
+      ssMonthly: fica.ssMonthly,
+      medicareMonthly: fica.medicareMonthly,
+      hasAdditionalMedicare: fica.additionalMedicareAnnual > 0,
+      totalMonthly: totalAnnual / 12,
+      effectiveRate: annualGross > 0 ? (totalAnnual / annualGross) : 0,
+      stateSelected: !!stateInfo
+    };
+  }
+
+  function setStatus(msg){
+    $('statusNote').textContent = msg;
+    if(msg){
+      clearTimeout(setStatus._t);
+      setStatus._t = setTimeout(()=>{ $('statusNote').textContent=''; }, 2500);
+    }
+  }
+
+  async function loadState(){
+    const myVersion = stateVersion;
+    try{
+      const result = await window.storage.get('budget-data', false);
+      if(myVersion !== stateVersion) return; // state was reset/replaced while this was in flight — discard
+      if(result && result.value){
+        const parsed = JSON.parse(result.value);
+        state = Object.assign({}, DEFAULT_STATE, parsed);
+        state.savingsPlan = Object.assign({}, DEFAULT_STATE.savingsPlan, parsed.savingsPlan || {});
+        state.savingsPlan.retirementAmounts = (parsed.savingsPlan && parsed.savingsPlan.retirementAmounts) || {};
+        state.savingsPlan.pockets = (parsed.savingsPlan && parsed.savingsPlan.pockets) || DEFAULT_STATE.savingsPlan.pockets;
+        state.advisor = Object.assign({}, DEFAULT_STATE.advisor, parsed.advisor || {});
+        state.advisor.perEarner = (parsed.advisor && parsed.advisor.perEarner) || {};
+        state.taxes = Object.assign({}, DEFAULT_STATE.taxes, parsed.taxes || {});
+      }
+    }catch(e){
+      // no existing data, start fresh
+    }
+    if(myVersion !== stateVersion) return; // double-check after the try/catch too
+    ensurePerEarnerDefaults();
+    renderAll();
+  }
+
+  async function saveState(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      try{
+        const result = await window.storage.set('budget-data', JSON.stringify(state), false);
+        if(!result){
+          setStatus('Could not save — your changes may not persist.');
+        }
+      }catch(e){
+        setStatus('Could not save — your changes may not persist.');
+      }
+    }, 400);
+  }
+
+  let stateDropdownPopulated = false;
+  function populateStateDropdown(){
+    if(stateDropdownPopulated) return;
+    const select = $('stateResidence');
+    const codes = Object.keys(STATE_TAX_TABLE).sort((a,b)=>STATE_TAX_TABLE[a].name.localeCompare(STATE_TAX_TABLE[b].name));
+    codes.forEach(code=>{
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = STATE_TAX_TABLE[code].name;
+      select.appendChild(opt);
+    });
+    stateDropdownPopulated = true;
+  }
+
+  function renderAll(){
+    $('monthLabel').value = state.month || '';
+    renderRows('incomeRows', state.income, 'income');
+    renderRows('expenseRows', state.expenses, 'expenses');
+    populateStateDropdown();
+    $('filingStatus').value = state.taxes.filingStatus || 'mfj';
+    $('stateResidence').value = state.taxes.stateCode || '';
+    renderGoals();
+    $('planMonthlyAmount').value = state.savingsPlan.monthlyAmount || '';
+    renderPockets();
+    renderSummary();
+    restoreAdvisorForm();
+  }
+
+  function getLeftover(){
+    const totalIncome = state.income.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const totalExpenses = state.expenses.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const taxes = computeEstimatedTaxes();
+    return totalIncome - taxes.totalMonthly - totalExpenses;
+  }
+
+  function renderRows(containerId, list, kind){
+    const container = $(containerId);
+    container.innerHTML = '';
+    if(list.length === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = kind === 'income'
+        ? 'Nothing added yet — start with your main paycheck or benefit.'
+        : 'Nothing added yet — start with rent or your biggest bill.';
+      container.appendChild(note);
+      return;
+    }
+    list.forEach(item=>{
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = item.name;
+      nameInput.placeholder = kind === 'income' ? 'Source name' : 'Expense name';
+      nameInput.addEventListener('change', ()=>{
+        item.name = nameInput.value;
+        if(kind === 'income'){
+          renderRetirementPockets();
+          renderPerEarnerQuestions();
+        }
+        saveState();
+      });
+
+      const amountWrap = document.createElement('div');
+      amountWrap.className = 'amount-wrap';
+      const dollar = document.createElement('span');
+      dollar.textContent = '$';
+      const amountInput = document.createElement('input');
+      amountInput.type = 'number';
+      amountInput.min = '0';
+      amountInput.step = '1';
+      amountInput.value = item.amount || '';
+      amountInput.placeholder = '0';
+      amountInput.addEventListener('input', ()=>{
+        item.amount = parseFloat(amountInput.value) || 0;
+        renderSummary();
+      });
+      amountInput.addEventListener('change', saveState);
+      amountWrap.appendChild(dollar);
+      amountWrap.appendChild(amountInput);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'row-remove';
+      removeBtn.type = 'button';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.title = 'Remove';
+      removeBtn.addEventListener('click', ()=>{
+        const arr = kind === 'income' ? state.income : state.expenses;
+        const idx = arr.findIndex(x=>x.id === item.id);
+        if(idx > -1) arr.splice(idx,1);
+        renderRows(containerId, arr, kind);
+        renderSummary();
+        if(kind === 'income'){
+          Object.keys(ACCOUNT_TYPES_BY_KEY).forEach(typeKey=>{
+            delete state.savingsPlan.retirementAmounts[retirementKey(item.id, typeKey)];
+          });
+          delete state.advisor.perEarner[item.id];
+          renderRetirementPockets();
+          renderPerEarnerQuestions();
+        }
+        saveState();
+      });
+
+      row.appendChild(nameInput);
+      row.appendChild(amountWrap);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+
+  function renderGoals(){
+    const container = $('goalsList');
+    container.innerHTML = '';
+    if(state.goals.length === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = 'No goals yet — a small emergency fund is a strong first one.';
+      container.appendChild(note);
+      return;
+    }
+    state.goals.forEach(goal=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'goal';
+
+      const top = document.createElement('div');
+      top.className = 'goal-top';
+      const nameInput = document.createElement('input');
+      nameInput.className = 'goal-name-input';
+      nameInput.type = 'text';
+      nameInput.value = goal.name;
+      nameInput.placeholder = 'Goal name';
+      nameInput.addEventListener('change', ()=>{ goal.name = nameInput.value; saveState(); });
+
+      const figures = document.createElement('div');
+      figures.className = 'goal-figures';
+      const pct = goal.target > 0 ? Math.min(100, Math.round((goal.saved/goal.target)*100)) : 0;
+      figures.textContent = `${fmt(goal.saved)} of ${fmt(goal.target)} (${pct}%)`;
+
+      top.appendChild(nameInput);
+      top.appendChild(figures);
+
+      const track = document.createElement('div');
+      track.className = 'goal-track';
+      const fill = document.createElement('div');
+      fill.className = 'goal-fill';
+      fill.style.width = pct + '%';
+      track.appendChild(fill);
+
+      const controls = document.createElement('div');
+      controls.className = 'goal-controls';
+
+      const targetLabel = document.createElement('label');
+      targetLabel.textContent = 'Target $';
+      const targetInput = document.createElement('input');
+      targetInput.type = 'number';
+      targetInput.min = '0';
+      targetInput.value = goal.target || '';
+      targetInput.addEventListener('input', ()=>{
+        goal.target = parseFloat(targetInput.value) || 0;
+        renderGoals();
+      });
+      targetInput.addEventListener('change', saveState);
+
+      const addLabel = document.createElement('label');
+      addLabel.textContent = 'Add $';
+      const addInput = document.createElement('input');
+      addInput.type = 'number';
+      addInput.min = '0';
+      addInput.placeholder = '0';
+      const addBtn = document.createElement('button');
+      addBtn.className = 'goal-add-btn';
+      addBtn.type = 'button';
+      addBtn.textContent = 'Add to saved';
+      addBtn.addEventListener('click', ()=>{
+        const val = parseFloat(addInput.value) || 0;
+        if(val !== 0){
+          goal.saved = Math.max(0, (goal.saved||0) + val);
+          addInput.value = '';
+          renderGoals();
+          saveState();
+        }
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'goal-remove';
+      removeBtn.type = 'button';
+      removeBtn.textContent = 'Remove goal';
+      removeBtn.addEventListener('click', ()=>{
+        const idx = state.goals.findIndex(g=>g.id === goal.id);
+        if(idx>-1) state.goals.splice(idx,1);
+        renderGoals();
+        saveState();
+      });
+
+      controls.appendChild(targetLabel);
+      controls.appendChild(targetInput);
+      controls.appendChild(addLabel);
+      controls.appendChild(addInput);
+      controls.appendChild(addBtn);
+      controls.appendChild(removeBtn);
+
+      wrap.appendChild(top);
+      wrap.appendChild(track);
+      wrap.appendChild(controls);
+      container.appendChild(wrap);
+    });
+  }
+
+  const POCKET_COLORS = ['#1F4B43', '#C98A2B', '#B5563A', '#5B7C99', '#7A6C53', '#8A9A5B'];
+  function pocketColor(index){
+    return POCKET_COLORS[index % POCKET_COLORS.length];
+  }
+
+  const ACCOUNT_TYPES_BY_KEY = {
+    traditional_ira: 'Traditional IRA',
+    roth_ira: 'Roth IRA',
+    company_401k: 'Company 401(k)',
+    solo_401k: 'Solo 401(k)',
+    sep_ira: 'SEP IRA'
+  };
+  function retirementKey(incomeId, typeKey){
+    return incomeId + '::' + typeKey;
+  }
+
+  function ensurePerEarnerDefaults(){
+    const validIds = state.income.map(i=>i.id);
+    // add defaults for any income source missing an entry
+    validIds.forEach(id=>{
+      if(!state.advisor.perEarner[id]){
+        state.advisor.perEarner[id] = {employmentType:'', employerPlan:'', bizPayroll:'', cashTaxSetAside:''};
+      }
+    });
+    // drop entries for income sources that no longer exist
+    Object.keys(state.advisor.perEarner).forEach(id=>{
+      if(!validIds.includes(id)) delete state.advisor.perEarner[id];
+    });
+  }
+
+  function getAccountTypesForEarner(incomeId){
+    const answers = state.advisor.perEarner[incomeId] || {};
+    const type = answers.employmentType;
+    if(type === 'employee'){
+      if(answers.employerPlan === 'match' || answers.employerPlan === 'nomatch'){
+        return ['company_401k', 'roth_ira'];
+      }
+      return ['traditional_ira', 'roth_ira'];
+    }
+    if(type === 's_corp' || type === 'c_corp'){
+      return ['solo_401k', 'sep_ira', 'roth_ira'];
+    }
+    if(type === 'cash'){
+      return ['traditional_ira', 'roth_ira'];
+    }
+    // not yet answered — show the general default set
+    return ['traditional_ira', 'roth_ira', 'company_401k'];
+  }
+
+  function buildAllPocketEntries(){
+    const entries = [];
+    state.income.forEach(inc=>{
+      getAccountTypesForEarner(inc.id).forEach(typeKey=>{
+        const key = retirementKey(inc.id, typeKey);
+        entries.push({
+          key,
+          amount: Number(state.savingsPlan.retirementAmounts[key]) || 0
+        });
+      });
+    });
+    state.savingsPlan.pockets.forEach(p=>{
+      entries.push({key:p.id, amount: Number(p.amount) || 0});
+    });
+    return entries;
+  }
+
+  function getEntryColorIndex(key){
+    const entries = buildAllPocketEntries();
+    return entries.findIndex(e=>e.key === key);
+  }
+
+  function renderRetirementPockets(){
+    const container = $('retirementPockets');
+    container.innerHTML = '';
+    if(state.income.length === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = 'Add an income source above to set up retirement pockets for each earner.';
+      container.appendChild(note);
+      return;
+    }
+    const monthlyAmount = Number(state.savingsPlan.monthlyAmount) || 0;
+    state.income.forEach(inc=>{
+      const block = document.createElement('div');
+      block.className = 'retirement-earner-block';
+
+      const heading = document.createElement('div');
+      heading.className = 'retirement-earner-name';
+      heading.textContent = inc.name || 'Unnamed income source';
+      block.appendChild(heading);
+
+      const ledger = document.createElement('div');
+      ledger.className = 'ledger';
+
+      getAccountTypesForEarner(inc.id).forEach(typeKey=>{
+        const key = retirementKey(inc.id, typeKey);
+        const colorIdx = getEntryColorIndex(key);
+
+        const row = document.createElement('div');
+        row.className = 'row pocket-row-fixed';
+
+        const dot = document.createElement('span');
+        dot.className = 'pocket-dot';
+        dot.style.background = pocketColor(colorIdx);
+
+        const label = document.createElement('span');
+        label.className = 'pocket-type-label';
+        label.textContent = ACCOUNT_TYPES_BY_KEY[typeKey];
+
+        const amountWrap = document.createElement('div');
+        amountWrap.className = 'amount-wrap';
+        const dollar = document.createElement('span');
+        dollar.textContent = '$';
+        const amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.min = '0';
+        amountInput.step = '1';
+        amountInput.value = state.savingsPlan.retirementAmounts[key] || '';
+        amountInput.placeholder = '0';
+        amountInput.addEventListener('input', ()=>{
+          state.savingsPlan.retirementAmounts[key] = parseFloat(amountInput.value) || 0;
+          refreshPocketDisplays();
+        });
+        amountInput.addEventListener('change', saveState);
+        amountWrap.appendChild(dollar);
+        amountWrap.appendChild(amountInput);
+
+        const pct = document.createElement('span');
+        pct.className = 'pocket-pct';
+        pct.setAttribute('data-key', key);
+        const amt = Number(state.savingsPlan.retirementAmounts[key]) || 0;
+        pct.textContent = monthlyAmount > 0 ? Math.round((amt/monthlyAmount)*100) + '%' : '—';
+
+        row.appendChild(dot);
+        row.appendChild(label);
+        row.appendChild(amountWrap);
+        row.appendChild(pct);
+        ledger.appendChild(row);
+      });
+
+      block.appendChild(ledger);
+      container.appendChild(block);
+    });
+  }
+
+  function syncDynamicOtherPockets(){
+    const kids = state.advisor.kids;
+    const pockets = state.savingsPlan.pockets;
+    const hasChildEdu = pockets.some(p=>p.name.trim().toLowerCase() === 'child education');
+    const wantsChildEdu = (kids === 'young' || kids === 'teen' || kids === 'planning');
+
+    if(wantsChildEdu && !hasChildEdu){
+      pockets.push({id:uid(), name:'Child education', amount:0, auto:true});
+    } else if(!wantsChildEdu && kids === 'none'){
+      const idx = pockets.findIndex(p=>p.auto && p.name.trim().toLowerCase() === 'child education' && (Number(p.amount)||0) === 0);
+      if(idx > -1) pockets.splice(idx,1);
+    }
+  }
+
+  function renderOtherPockets(){
+    const container = $('pocketsRows');
+    container.innerHTML = '';
+    const pockets = state.savingsPlan.pockets;
+    if(pockets.length === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = 'No other pockets yet — try child education or private investments.';
+      container.appendChild(note);
+      return;
+    }
+    const monthlyAmount = Number(state.savingsPlan.monthlyAmount) || 0;
+    pockets.forEach(pocket=>{
+      const colorIdx = getEntryColorIndex(pocket.id);
+      const row = document.createElement('div');
+      row.className = 'row pocket-row';
+
+      const dot = document.createElement('span');
+      dot.className = 'pocket-dot';
+      dot.style.background = pocketColor(colorIdx);
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = pocket.name;
+      nameInput.placeholder = 'Pocket name';
+      nameInput.addEventListener('change', ()=>{
+        pocket.name = nameInput.value;
+        saveState();
+      });
+
+      const amountWrap = document.createElement('div');
+      amountWrap.className = 'amount-wrap';
+      const dollar = document.createElement('span');
+      dollar.textContent = '$';
+      const amountInput = document.createElement('input');
+      amountInput.type = 'number';
+      amountInput.min = '0';
+      amountInput.step = '1';
+      amountInput.value = pocket.amount || '';
+      amountInput.placeholder = '0';
+      amountInput.addEventListener('input', ()=>{
+        pocket.amount = parseFloat(amountInput.value) || 0;
+        refreshPocketDisplays();
+      });
+      amountInput.addEventListener('change', saveState);
+      amountWrap.appendChild(dollar);
+      amountWrap.appendChild(amountInput);
+
+      const pct = document.createElement('span');
+      pct.className = 'pocket-pct';
+      pct.setAttribute('data-key', pocket.id);
+      pct.textContent = monthlyAmount > 0 ? Math.round(((Number(pocket.amount)||0)/monthlyAmount)*100) + '%' : '—';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'row-remove';
+      removeBtn.type = 'button';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.title = 'Remove';
+      removeBtn.addEventListener('click', ()=>{
+        const idx2 = pockets.findIndex(p=>p.id === pocket.id);
+        if(idx2 > -1) pockets.splice(idx2,1);
+        renderOtherPockets();
+        renderRetirementPockets();
+        saveState();
+      });
+
+      row.appendChild(dot);
+      row.appendChild(nameInput);
+      row.appendChild(amountWrap);
+      row.appendChild(pct);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  }
+
+  function renderPockets(){
+    renderRetirementPockets();
+    renderOtherPockets();
+  }
+
+  function refreshPocketDisplays(){
+    const monthlyAmount = Number(state.savingsPlan.monthlyAmount) || 0;
+    const entries = buildAllPocketEntries();
+    const amountByKey = {};
+    entries.forEach(e=>{ amountByKey[e.key] = e.amount; });
+
+    document.querySelectorAll('.pocket-pct[data-key]').forEach(el=>{
+      const key = el.getAttribute('data-key');
+      const amt = amountByKey[key] || 0;
+      el.textContent = monthlyAmount > 0 ? Math.round((amt/monthlyAmount)*100) + '%' : '—';
+    });
+
+    renderPlanBarAndSummary(entries, monthlyAmount);
+  }
+
+  function renderPlanBarAndSummary(entries, monthlyAmount){
+    entries = entries || buildAllPocketEntries();
+    monthlyAmount = monthlyAmount !== undefined ? monthlyAmount : (Number(state.savingsPlan.monthlyAmount) || 0);
+    const totalAllocated = entries.reduce((s,e)=>s+e.amount,0);
+
+    const bar = $('planBar');
+    bar.innerHTML = '';
+    if(monthlyAmount > 0){
+      entries.forEach((entry, idx)=>{
+        if(entry.amount <= 0) return;
+        const seg = document.createElement('div');
+        seg.className = 'plan-bar-seg';
+        seg.style.width = Math.min(100, (entry.amount/monthlyAmount)*100) + '%';
+        seg.style.background = pocketColor(idx);
+        bar.appendChild(seg);
+      });
+      if(totalAllocated < monthlyAmount){
+        const restSeg = document.createElement('div');
+        restSeg.className = 'plan-bar-seg';
+        restSeg.style.width = Math.max(0, 100 - (totalAllocated/monthlyAmount)*100) + '%';
+        restSeg.style.background = 'var(--paper-raised)';
+        bar.appendChild(restSeg);
+      }
+    }
+
+    const summary = $('planSummary');
+    const remaining = monthlyAmount - totalAllocated;
+    if(monthlyAmount <= 0){
+      summary.innerHTML = 'Set an amount to save this month to start dividing it into pockets.';
+    } else if(remaining > 0){
+      summary.innerHTML = `<span class="val">${fmt(totalAllocated)}</span> allocated of <span class="val">${fmt(monthlyAmount)}</span> — <span class="val">${fmt(remaining)}</span> left to assign.`;
+    } else if(remaining < 0){
+      summary.innerHTML = `<span class="warn">Over-allocated by ${fmt(Math.abs(remaining))}</span> — your pockets add up to more than the ${fmt(monthlyAmount)} you set aside.`;
+    } else {
+      summary.innerHTML = `<span class="val">${fmt(totalAllocated)}</span> fully allocated across your pockets.`;
+    }
+  }
+
+  function renderSummary(){
+    const totalIncome = state.income.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const totalExpenses = state.expenses.reduce((s,i)=>s+(Number(i.amount)||0),0);
+    const taxes = computeEstimatedTaxes();
+    const estTax = taxes.totalMonthly;
+    const leftover = totalIncome - estTax - totalExpenses;
+
+    $('incomeTotal').textContent = fmt(totalIncome);
+    $('expenseTotal').textContent = fmt(totalExpenses);
+
+    const heroNum = $('heroNumber');
+    heroNum.textContent = fmt(leftover);
+    heroNum.classList.toggle('negative', leftover < 0);
+
+    const heroLabel = $('heroLabel');
+    heroLabel.textContent = leftover < 0
+      ? 'more going out than coming in this month — see which expenses might flex'
+      : 'left over this month, after estimated taxes and bills';
+
+    const breakdown = $('heroBreakdown');
+    breakdown.innerHTML = '';
+    const partIn = document.createElement('span');
+    partIn.innerHTML = `Money in <span class="val">${fmt(totalIncome)}</span>`;
+    const opMinus1 = document.createElement('span');
+    opMinus1.className = 'op';
+    opMinus1.textContent = '−';
+    const partTax = document.createElement('span');
+    partTax.innerHTML = `est. taxes <span class="val">${fmt(estTax)}</span>`;
+    const opMinus2 = document.createElement('span');
+    opMinus2.className = 'op';
+    opMinus2.textContent = '−';
+    const partOut = document.createElement('span');
+    partOut.innerHTML = `money out <span class="val">${fmt(totalExpenses)}</span>`;
+    const opEq = document.createElement('span');
+    opEq.className = 'op';
+    opEq.textContent = '=';
+    const partResult = document.createElement('span');
+    partResult.className = 'eq-result ' + (leftover < 0 ? 'negative' : 'positive');
+    partResult.textContent = 'net ' + fmt(leftover);
+    breakdown.appendChild(partIn);
+    breakdown.appendChild(opMinus1);
+    breakdown.appendChild(partTax);
+    breakdown.appendChild(opMinus2);
+    breakdown.appendChild(partOut);
+    breakdown.appendChild(opEq);
+    breakdown.appendChild(partResult);
+
+    const bar = $('heroBar');
+    bar.innerHTML = '';
+    if(totalIncome > 0){
+      const taxPct = Math.min(100, (estTax/totalIncome)*100);
+      const expPct = Math.min(100 - taxPct, (totalExpenses/totalIncome)*100);
+      const taxSeg = document.createElement('div');
+      taxSeg.className = 'hero-bar-seg';
+      taxSeg.style.width = taxPct + '%';
+      taxSeg.style.background = '#8A7B6C';
+      const spentSeg = document.createElement('div');
+      spentSeg.className = 'hero-bar-seg';
+      spentSeg.style.width = expPct + '%';
+      spentSeg.style.background = leftover < 0 ? 'var(--brick)' : 'var(--teal)';
+      const restSeg = document.createElement('div');
+      restSeg.className = 'hero-bar-seg';
+      restSeg.style.width = Math.max(0, 100 - taxPct - expPct) + '%';
+      restSeg.style.background = 'var(--ochre-light)';
+      bar.appendChild(taxSeg);
+      bar.appendChild(spentSeg);
+      if(leftover >= 0) bar.appendChild(restSeg);
+    }
+
+    $('leftoverPreview').textContent = fmt(leftover);
+    renderTaxSummary(taxes);
+  }
+
+  function renderTaxSummary(taxes){
+    taxes = taxes || computeEstimatedTaxes();
+    const container = $('taxSummary');
+    container.innerHTML = '';
+
+    const rows = [
+      ['Gross annual income', fmt(taxes.annualGross)],
+      ['Standard deduction', fmt(taxes.stdDeduction)],
+      ['Estimated taxable income', fmt(taxes.taxableAnnual)],
+      ['Estimated federal income tax (monthly)', fmt(taxes.fedMonthly)],
+      ['Estimated state income tax (monthly)', taxes.stateSelected ? fmt(taxes.stateMonthly) : 'Select a state above'],
+      ['Estimated Social Security tax (monthly)', fmt(taxes.ssMonthly)],
+      ['Estimated Medicare tax (monthly)' + (taxes.hasAdditionalMedicare ? ' *' : ''), fmt(taxes.medicareMonthly)],
+      ['Total estimated taxes (monthly)', fmt(taxes.totalMonthly)],
+      ['Effective tax rate', (taxes.effectiveRate*100).toFixed(1) + '%']
+    ];
+
+    rows.forEach(([label, val], idx)=>{
+      const row = document.createElement('div');
+      row.className = 'tax-row' + (idx >= 7 ? ' total' : '');
+      const l = document.createElement('span');
+      l.className = 'label';
+      l.textContent = label;
+      const v = document.createElement('span');
+      v.className = 'amt';
+      v.textContent = val;
+      row.appendChild(l);
+      row.appendChild(v);
+      container.appendChild(row);
+    });
+
+    if(taxes.hasAdditionalMedicare){
+      const note = document.createElement('div');
+      note.className = 'tax-disclaimer';
+      note.style.marginTop = '8px';
+      note.textContent = '* Includes the extra 0.9% Additional Medicare Tax that applies above the household income threshold for your filing status.';
+      container.appendChild(note);
+    }
+  }
+
+  function getRequiredKeysForEarner(employmentType){
+    if(employmentType === 'employee') return ['employmentType','employerPlan'];
+    if(employmentType === 's_corp' || employmentType === 'c_corp') return ['employmentType','bizPayroll'];
+    if(employmentType === 'cash') return ['employmentType','cashTaxSetAside'];
+    return ['employmentType'];
+  }
+
+  function allAdvisorAnswered(){
+    const household = ['kids','taxCredits','emergency'];
+    if(!household.every(k=>state.advisor[k])) return false;
+    return state.income.every(inc=>{
+      const answers = state.advisor.perEarner[inc.id] || {};
+      const required = getRequiredKeysForEarner(answers.employmentType);
+      return required.every(k=>answers[k]);
+    });
+  }
+
+  function renderPerEarnerQuestions(){
+    const container = $('perEarnerQuestions');
+    container.innerHTML = '';
+    if(state.income.length === 0){
+      const note = document.createElement('div');
+      note.className = 'empty-note';
+      note.textContent = 'Add an income source above to answer questions for each earner.';
+      container.appendChild(note);
+      return;
+    }
+    state.income.forEach(inc=>{
+      const answers = state.advisor.perEarner[inc.id] || {employmentType:'', employerPlan:'', bizPayroll:'', cashTaxSetAside:''};
+      const block = document.createElement('div');
+      block.className = 'advisor-earner-block';
+      block.setAttribute('data-income-id', inc.id);
+
+      const heading = document.createElement('div');
+      heading.className = 'advisor-earner-name';
+      heading.textContent = inc.name || 'Unnamed income source';
+      block.appendChild(heading);
+
+      block.appendChild(makeAdvisorQuestion(
+        `employmentType_${inc.id}`, 'employmentType',
+        'How does this income come in?',
+        [
+          ['employee', 'Works for a company (W-2 employee)'],
+          ['s_corp', 'Self-employed, through an S corporation'],
+          ['c_corp', 'Self-employed, through a C corporation'],
+          ['cash', 'Hourly or cash work, no formal payroll']
+        ],
+        answers.employmentType
+      ));
+
+      const employerQ = makeAdvisorQuestion(
+        `employerPlan_${inc.id}`, 'employerPlan',
+        'Does their employer offer a retirement plan, like a 401(k) or 403(b)?',
+        [
+          ['match', 'Yes, and they match contributions'],
+          ['nomatch', 'Yes, but no match'],
+          ['none', 'No, or not offered'],
+          ['unsure', 'Not sure']
+        ],
+        answers.employerPlan
+      );
+      employerQ.style.display = (answers.employmentType === 'employee') ? '' : 'none';
+      block.appendChild(employerQ);
+
+      const bizQ = makeAdvisorQuestion(
+        `bizPayroll_${inc.id}`, 'bizPayroll',
+        'Do they currently pay themselves a regular W-2 salary from the business, or mostly take distributions?',
+        [
+          ['regular', 'Yes, a regular salary'],
+          ['minimal', 'A small or occasional salary'],
+          ['none', 'No, everything comes out as distributions or dividends'],
+          ['unsure', "Not sure how it's currently set up"]
+        ],
+        answers.bizPayroll
+      );
+      bizQ.style.display = (answers.employmentType === 's_corp' || answers.employmentType === 'c_corp') ? '' : 'none';
+      block.appendChild(bizQ);
+
+      const cashQ = makeAdvisorQuestion(
+        `cashTaxSetAside_${inc.id}`, 'cashTaxSetAside',
+        'Do they currently set aside money from each payment for taxes?',
+        [
+          ['regular', 'Yes, a set amount or percentage each time'],
+          ['sometimes', 'Sometimes, when they remember'],
+          ['none', 'No, not currently']
+        ],
+        answers.cashTaxSetAside
+      );
+      cashQ.style.display = (answers.employmentType === 'cash') ? '' : 'none';
+      block.appendChild(cashQ);
+
+      container.appendChild(block);
+    });
+  }
+
+  function makeAdvisorQuestion(radioName, followupKey, title, options, currentValue){
+    const q = document.createElement('div');
+    q.className = 'advisor-q';
+    q.setAttribute('data-followup', followupKey);
+    const t = document.createElement('div');
+    t.className = 'advisor-q-title';
+    t.textContent = title;
+    q.appendChild(t);
+    const opts = document.createElement('div');
+    opts.className = 'advisor-options';
+    options.forEach(([value, text])=>{
+      const label = document.createElement('label');
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = radioName;
+      radio.value = value;
+      if(currentValue === value) radio.checked = true;
+      label.appendChild(radio);
+      label.appendChild(document.createTextNode(' ' + text));
+      opts.appendChild(label);
+    });
+    q.appendChild(opts);
+    return q;
+  }
+
+  function restoreAdvisorForm(){
+    ensurePerEarnerDefaults();
+    renderPerEarnerQuestions();
+    const form = $('advisorForm');
+    ['kids','taxCredits','emergency'].forEach(key=>{
+      const val = state.advisor[key];
+      if(!val) return;
+      const input = form.querySelector(`input[name="${key}"][value="${val}"]`);
+      if(input) input.checked = true;
+    });
+    renderAdvisorResults();
+  }
+
+  function computeAdvisorTips(){
+    const retirement = [];
+    const tax = [];
+    const education = [];
+    const business = [];
+    const advisor = state.advisor;
+
+    state.income.forEach(inc=>{
+      const a = advisor.perEarner[inc.id] || {};
+      const who = inc.name || 'This earner';
+
+      // Retirement, per earner
+      if(a.employmentType === 'employee'){
+        if(a.employerPlan === 'match'){
+          retirement.push(`${who}'s employer matches contributions — putting in at least enough to get the full match is generally worth prioritizing, since it's an immediate return before anything else.`);
+        } else if(a.employerPlan === 'nomatch'){
+          retirement.push(`Without a match, it can be worth comparing ${who}'s employer plan fees to opening a Roth IRA instead, which may offer more flexibility.`);
+        } else if(a.employerPlan === 'none'){
+          retirement.push(`A Roth IRA is worth looking into for ${who} — contributions grow tax-free, and you can withdraw what you contributed (not earnings) without penalty if there's ever an emergency.`);
+        } else if(a.employerPlan === 'unsure'){
+          retirement.push(`It's worth ${who} asking HR or payroll whether a retirement plan and match are available — many employees don't realize what's offered.`);
+        }
+      } else if(a.employmentType === 's_corp' || a.employmentType === 'c_corp'){
+        retirement.push(`As a business owner, ${who} doesn't have an employer plan to fall back on, but does have options built for the self-employed: a Solo 401(k) allows contributing both as "employee" and "employer," and a SEP IRA is simpler to set up with fewer ongoing filing requirements.`);
+      } else if(a.employmentType === 'cash'){
+        retirement.push(`Without an employer plan, a Roth IRA is one of the more accessible options for ${who} — most banks or credit unions can open one, and contributions (not earnings) can be withdrawn penalty-free if there's ever an emergency.`);
+      }
+
+      // Tax, per earner (cash-specific)
+      if(a.employmentType === 'cash'){
+        tax.push(`${who}'s cash or hourly income is still taxable and still counts toward Social Security, even without a W-2 — reporting it is what makes it eligible for credits like the EITC, and it protects future Social Security benefits.`);
+        tax.push(`Self-employment tax (Social Security and Medicare) runs 15.3% on net self-employment earnings, on top of regular income tax — many people in hourly or cash work set aside a portion of each payment for this rather than being caught short at filing time.`);
+        if(a.cashTaxSetAside === 'none'){
+          tax.push(`Since nothing is set aside yet for ${who}, a common starting point is putting a fixed percentage of each payment — often somewhere around a quarter of it — into a separate account that isn't touched, then adjusting once an actual tax return is filed.`);
+        } else if(a.cashTaxSetAside === 'sometimes'){
+          tax.push(`Making ${who}'s set-aside automatic (a fixed percentage every time they're paid, moved right away) tends to hold up better than doing it when they remember — and it lines up with the IRS's quarterly estimated tax deadlines for income without withholding.`);
+        } else if(a.cashTaxSetAside === 'regular'){
+          tax.push(`Since ${who} is already setting money aside consistently, it's worth checking whether quarterly estimated tax payments to the IRS are needed, which can help avoid an underpayment penalty at filing time.`);
+        }
+      }
+
+      // Business owner salary vs. distributions, per earner
+      if(a.employmentType === 's_corp'){
+        business.push(`As an S corp owner-employee, ${who} is required to pay "reasonable compensation" through W-2 payroll before taking any remaining profit as distributions.`);
+        if(a.bizPayroll === 'none'){
+          business.push(`Taking everything out as distributions with no salary at all is one of the clearest patterns the IRS looks for when reclassifying distributions as wages — worth addressing soon rather than waiting for a notice.`);
+        } else if(a.bizPayroll === 'minimal'){
+          business.push(`A small or occasional salary is better than none, but it's still worth checking that the amount holds up as "reasonable" for the role — a CPA can compare it against typical pay for similar work in the area.`);
+        } else if(a.bizPayroll === 'regular'){
+          business.push(`Paying a regular salary is the right shape — it's still worth revisiting the amount periodically as the business's profit changes, since "reasonable" shifts with it.`);
+        }
+        business.push(`The appeal of the S corp structure is that distributions above salary aren't hit with Social Security/Medicare tax — only the salary portion is. That creates an incentive to keep salary lower and distributions higher, which is exactly what the IRS scrutinizes if it looks artificially low. "Reasonable" is generally judged against what a similar role would pay in the industry and region — there's no fixed percentage that's officially safe.`);
+        business.push(`Because the right number depends on role, hours, industry comparables, and total profit, this is genuinely worth sitting down with a CPA to set, rather than picking a figure alone.`);
+      } else if(a.employmentType === 'c_corp'){
+        business.push(`A C corp pays corporate income tax on its profits, and if any of that profit is later paid out as dividends, it's taxed again on the personal return — double taxation. Salary, by contrast, is deductible to the corporation and only taxed once (plus payroll tax).`);
+        if(a.bizPayroll === 'none'){
+          business.push(`Taking no salary at all means missing out on a deduction the corporation could otherwise claim, and it also means personal income depends entirely on dividend timing, which is taxed twice — worth discussing with a CPA whether some salary makes more sense here.`);
+        }
+        business.push(`That flips the incentive compared to an S corp: C corp owners often prefer taking more as salary and less as dividends, since salary avoids the double tax. The offsetting limit is the same "reasonable compensation" standard — but here the IRS watches for salary that looks unreasonably high, since it shrinks the corporation's taxable profit.`);
+        business.push(`Fringe benefits like health insurance and retirement contributions can sometimes be structured tax-efficiently through a C corp in ways that aren't available to owners of pass-through entities — worth asking a CPA what applies here.`);
+        business.push(`Because the balance between salary and dividends affects both corporate and personal tax bills, and carries real audit exposure if it looks unreasonable in either direction, this is worth working through with a CPA rather than deciding alone.`);
+      }
+    });
+
+    // Household-level tips, once
+    if(retirement.length > 0){
+      retirement.push('The Saver\'s Credit (Retirement Savings Contributions Credit) can be worth up to 50% of what you contribute to a retirement account, for filers under certain income limits — it\'s a tax credit on top of the retirement savings itself.');
+    }
+    if(advisor.emergency === 'none' && retirement.length > 0){
+      retirement.push('Before locking money away for retirement or education, many families find it worth building a small emergency cushion first, so an unexpected cost doesn\'t force an early withdrawal with penalties.');
+    }
+
+    if(advisor.taxCredits === 'no'){
+      tax.push('The Earned Income Tax Credit and Child Tax Credit are among the largest benefits available to working families, and eligibility depends on income and household size each year — worth checking even if you didn\'t qualify before.');
+    } else if(advisor.taxCredits === 'nofile'){
+      tax.push('Filing a tax return, even with little or no tax owed, is often the only way to receive credits like the EITC or Child Tax Credit — free filing help is available through VITA for many households.');
+    } else if(advisor.taxCredits === 'yes'){
+      tax.push('Since you\'re already claiming these credits, it may be worth double-checking each year that you\'re getting the full amount you qualify for, since the rules and income limits change annually.');
+    }
+    tax.push('VITA (Volunteer Income Tax Assistance) offers free tax preparation for many low- and moderate-income households, and can help spot credits that are easy to miss when filing alone.');
+
+    if(advisor.kids === 'young' || advisor.kids === 'planning'){
+      education.push('A 529 education savings plan grows tax-free for future education costs, and some states add a matching contribution for lower-income families — worth checking what your state offers.');
+      education.push('Some states run "children\'s savings account" or seed-deposit programs that start a 529 account for a child regardless of family income.');
+    } else if(advisor.kids === 'teen'){
+      education.push('Even with a shorter time horizon, contributions to a 529 plan still grow tax-free, and many states offer a tax deduction or credit for contributions made before your child starts school.');
+      education.push('It\'s worth researching the FAFSA and state or local grant deadlines early, since aid is often awarded on a first-come basis.');
+    }
+
+    return {retirement, tax, education, business};
+  }
+
+  function renderAdvisorResults(){
+    const container = $('advisorResults');
+    const allAnswered = allAdvisorAnswered();
+    if(!allAnswered){
+      container.innerHTML = '';
+      return;
+    }
+    const tips = computeAdvisorTips();
+    container.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'advisor-results';
+
+    const categories = [
+      {title:'Retirement', items:tips.retirement},
+      {title:'Tax filing', items:tips.tax},
+      {title:'Education savings', items:tips.education},
+      {title:'Business owner: salary vs. distributions', items:tips.business}
+    ];
+
+    categories.forEach(cat=>{
+      if(cat.items.length === 0) return;
+      const catDiv = document.createElement('div');
+      catDiv.className = 'advisor-category';
+      const h3 = document.createElement('h3');
+      h3.textContent = cat.title;
+      catDiv.appendChild(h3);
+      cat.items.forEach(text=>{
+        const tip = document.createElement('div');
+        tip.className = 'tip';
+        tip.textContent = text;
+        catDiv.appendChild(tip);
+      });
+      wrap.appendChild(catDiv);
+    });
+
+    const disclaimer = document.createElement('div');
+    disclaimer.className = 'advisor-disclaimer';
+    disclaimer.textContent = 'These are general options many households in similar situations look into — not personalized financial, tax, or legal advice. A free VITA tax preparer or a nonprofit financial counselor can help you apply these to your specific numbers.';
+    wrap.appendChild(disclaimer);
+
+    container.appendChild(wrap);
+  }
+
+  // Event wiring
+  $('filingStatus').addEventListener('change', ()=>{
+    state.taxes.filingStatus = $('filingStatus').value;
+    renderSummary();
+    saveState();
+  });
+  $('stateResidence').addEventListener('change', ()=>{
+    state.taxes.stateCode = $('stateResidence').value;
+    renderSummary();
+    saveState();
+  });
+  $('addIncomeBtn').addEventListener('click', ()=>{
+    state.income.push({id:uid(), name:'', amount:0});
+    renderRows('incomeRows', state.income, 'income');
+    ensurePerEarnerDefaults();
+    renderRetirementPockets();
+    renderPerEarnerQuestions();
+    saveState();
+  });
+  $('addExpenseBtn').addEventListener('click', ()=>{
+    state.expenses.push({id:uid(), name:'', amount:0});
+    renderRows('expenseRows', state.expenses, 'expenses');
+    saveState();
+  });
+  $('resetExpensesBtn').addEventListener('click', ()=>{
+    if(confirm('Replace your current expense list with the common-category checklist? This clears what\'s currently entered under Money out.')){
+      stateVersion++;
+      state.expenses = JSON.parse(JSON.stringify(DEFAULT_STATE.expenses)).map(e=>({...e, id:uid()}));
+      renderRows('expenseRows', state.expenses, 'expenses');
+      renderSummary();
+      setStatus('Expense categories reset.');
+      saveState();
+    }
+  });
+  $('addGoalBtn').addEventListener('click', ()=>{
+    state.goals.push({id:uid(), name:'', target:0, saved:0});
+    renderGoals();
+    saveState();
+  });
+  $('planMonthlyAmount').addEventListener('input', ()=>{
+    state.savingsPlan.monthlyAmount = parseFloat($('planMonthlyAmount').value) || 0;
+    refreshPocketDisplays();
+  });
+  $('planMonthlyAmount').addEventListener('change', saveState);
+  $('useLeftoverBtn').addEventListener('click', ()=>{
+    const leftover = Math.max(0, getLeftover());
+    state.savingsPlan.monthlyAmount = leftover;
+    $('planMonthlyAmount').value = leftover || '';
+    refreshPocketDisplays();
+    saveState();
+  });
+  $('addPocketBtn').addEventListener('click', ()=>{
+    state.savingsPlan.pockets.push({id:uid(), name:'', amount:0});
+    renderPockets();
+    saveState();
+  });
+  $('monthLabel').addEventListener('change', ()=>{
+    state.month = $('monthLabel').value;
+    saveState();
+  });
+  $('resetBtn').addEventListener('click', async ()=>{
+    if(confirm('Clear all budget data? This cannot be undone.')){
+      stateVersion++;
+      state = JSON.parse(JSON.stringify(EMPTY_STATE));
+      renderAll();
+      try{
+        const result = await window.storage.set('budget-data', JSON.stringify(state), false);
+        setStatus(result ? 'Cleared.' : 'Cleared on screen, but saving failed — it may reappear on reload.');
+      }catch(e){
+        setStatus('Cleared on screen, but saving failed — it may reappear on reload.');
+      }
+    }
+  });
+
+  $('advisorForm').addEventListener('change', (e)=>{
+    const t = e.target;
+    if(!t || t.type !== 'radio') return;
+
+    if(t.name.startsWith('employmentType_')){
+      const incomeId = t.name.slice('employmentType_'.length);
+      const answers = state.advisor.perEarner[incomeId] || {employmentType:'', employerPlan:'', bizPayroll:'', cashTaxSetAside:''};
+      answers.employmentType = t.value;
+      state.advisor.perEarner[incomeId] = answers;
+      renderPerEarnerQuestions();
+      renderRetirementPockets();
+      saveState();
+    } else if(t.name.startsWith('employerPlan_')){
+      const incomeId = t.name.slice('employerPlan_'.length);
+      state.advisor.perEarner[incomeId].employerPlan = t.value;
+      saveState();
+    } else if(t.name.startsWith('bizPayroll_')){
+      const incomeId = t.name.slice('bizPayroll_'.length);
+      state.advisor.perEarner[incomeId].bizPayroll = t.value;
+      saveState();
+    } else if(t.name.startsWith('cashTaxSetAside_')){
+      const incomeId = t.name.slice('cashTaxSetAside_'.length);
+      state.advisor.perEarner[incomeId].cashTaxSetAside = t.value;
+      saveState();
+    } else if(t.name === 'kids'){
+      state.advisor.kids = t.value;
+      syncDynamicOtherPockets();
+      renderOtherPockets();
+      saveState();
+    } else if(t.name === 'taxCredits' || t.name === 'emergency'){
+      state.advisor[t.name] = t.value;
+      saveState();
+    }
+  });
+
+  $('advisorSubmit').addEventListener('click', ()=>{
+    if(!allAdvisorAnswered()){
+      setStatus('Please answer all the questions to see pointers.');
+      return;
+    }
+    renderAdvisorResults();
+    saveState();
+  });
+
+  loadState();
+})();
+</script>
+
+</body>
+</html>
